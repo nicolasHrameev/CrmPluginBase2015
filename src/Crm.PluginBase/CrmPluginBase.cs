@@ -12,6 +12,8 @@ namespace Crm.PluginBase
 {
     public abstract class CrmPluginBase<T> : IPluginMessageOperationExecutor<T>, IPlugin where T : Entity
     {
+        private IOrganizationService systemService;
+
         protected CrmPluginBase(string unsecure, string secure = null)
         {
             Unsecure = unsecure;
@@ -28,10 +30,15 @@ namespace Crm.PluginBase
         {
             get
             {
-                var context = ServiceProvider.GetService<IPluginExecutionContext>();
-                context.EnableProxyTypes(GetProxyAssembly());
-                var serviceFactory = ServiceProvider.GetService<IOrganizationServiceFactory>();
-                return serviceFactory.CreateOrganizationService(null);
+                if (systemService == null)
+                {
+                    var context = ServiceProvider.GetService<IPluginExecutionContext>();
+                    context.EnableProxyTypes(GetProxyAssembly());
+                    var serviceFactory = ServiceProvider.GetService<IOrganizationServiceFactory>();
+                    systemService = serviceFactory.CreateOrganizationService(null);
+                }
+
+                return systemService;
             }
         }
 
@@ -54,22 +61,41 @@ namespace Crm.PluginBase
             }
         }
 
-        /// <summary>
-        /// Realization of Microsoft.Xrm.Sdk IPlugin interface - executes the plug-in
-        /// </summary>
-        /// <param name="serviceProvider">The service provider</param>
-        /// <remarks>
-        /// For improved performance, Microsoft Dynamics CRM caches plug-in instances.
-        /// The plug-in's Execute method should be written to be stateless as the constructor
-        /// is not called for every invocation of the plug-in.
-        /// Also, multiple system threads could execute the plug-in at the same time.
-        /// All per invocation state information is stored in the context.
-        /// This means that you should not use global variables in plug-ins.
-        /// </remarks>
         public void Execute(IServiceProvider serviceProvider)
         {
             ServiceProvider = serviceProvider;
-            Execute();
+            var executionContext = ServiceProvider.GetService<IPluginExecutionContext>();
+
+            // ToDo: use Polly
+            var exceptionMessage = string.Empty;
+            Exception originException = null;
+
+            try
+            {
+                OnExecute(executionContext);
+            }
+            catch (CrmException ex)
+            {
+                exceptionMessage = string.Format("Error occured:\n{0}", ex.Message);
+                if (!ex.Expected)
+                {
+                    exceptionMessage += "\nStackTrace:\n" + ex.StackTrace;
+                }
+
+                originException = ex;
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = string.Format("Error occured:\n{0}\nStackTrace:\n{1}", ex.Message, ex.StackTrace);
+                originException = ex;
+            }
+            finally
+            {
+                if (originException != null)
+                {
+                    throw new InvalidPluginExecutionException(exceptionMessage, originException);
+                }
+            }
         }
 
         /// <summary>
@@ -279,40 +305,6 @@ namespace Crm.PluginBase
         protected virtual Assembly GetProxyAssembly()
         {
             return Assembly.GetAssembly(GetType());
-        }
-
-        private void Execute()
-        {
-            // ToDo: use Polly
-            var exceptionMessage = string.Empty;
-            Exception originException = null;
-            try
-            {
-                var executionContext = ServiceProvider.GetService<IPluginExecutionContext>();
-                OnExecute(executionContext);
-            }
-            catch (CrmException ex)
-            {
-                exceptionMessage = string.Format("Error occured:\n{0}", ex.Message);
-                if (!ex.Expected)
-                {
-                    exceptionMessage += "\nStackTrace:\n" + ex.StackTrace;
-                }
-
-                originException = ex;
-            }
-            catch (Exception ex)
-            {
-                exceptionMessage = string.Format("Error occured:\n{0}\nStackTrace:\n{1}", ex.Message, ex.StackTrace);
-                originException = ex;
-            }
-            finally
-            {
-                if (originException != null)
-                {
-                    throw new InvalidPluginExecutionException(exceptionMessage, originException);
-                }
-            }
         }
 
         private void OnExecute(IPluginExecutionContext executionContext)
