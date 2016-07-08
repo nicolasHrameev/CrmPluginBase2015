@@ -55,15 +55,16 @@ namespace Crm.PluginBase
         }
 
         /// <summary>
-        /// Realization of Microsoft.Xrm.Sdk IPlugin interface - Executes the plug-in.
+        /// Realization of Microsoft.Xrm.Sdk IPlugin interface - executes the plug-in
         /// </summary>
         /// <param name="serviceProvider">The service provider</param>
         /// <remarks>
         /// For improved performance, Microsoft Dynamics CRM caches plug-in instances.
         /// The plug-in's Execute method should be written to be stateless as the constructor
-        /// is not called for every invocation of the plug-in. Also, multiple system threads
-        /// could execute the plug-in at the same time. All per invocation state information
-        /// is stored in the context. This means that you should not use global variables in plug-ins.
+        /// is not called for every invocation of the plug-in.
+        /// Also, multiple system threads could execute the plug-in at the same time.
+        /// All per invocation state information is stored in the context.
+        /// This means that you should not use global variables in plug-ins.
         /// </remarks>
         public void Execute(IServiceProvider serviceProvider)
         {
