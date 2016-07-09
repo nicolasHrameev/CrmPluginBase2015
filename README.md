@@ -6,3 +6,5 @@ Provides ability for easy CRM plugins creation with focus on what you need to do
 out of pain InputParameters/OutputParameters parsing.
 
 Install package from [nuget](https://www.nuget.org/packages/CrmPluginBase/) and enjoy!
+
+##**IMPORTANT NOTE:## you must name your PreEntityImage as preimage and PostEntityImage as postimage exactly.**
