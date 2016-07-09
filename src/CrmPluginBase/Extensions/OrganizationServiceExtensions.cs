@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace Crm.PluginBase.Extensions
+namespace CrmPluginBase.Extensions
 {
     public static class OrganizationServiceExtensions
     {

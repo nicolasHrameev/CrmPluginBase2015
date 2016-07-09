@@ -4,7 +4,7 @@ using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace Crm.PluginBase
+namespace CrmPluginBase
 {
     internal class ParametersWrapper<T> where T : Entity
     {

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Reflection;
 
-using Crm.PluginBase.Exceptions;
-using Crm.PluginBase.Extensions;
-using Crm.PluginBase.Interfaces;
+using CrmPluginBase.Exceptions;
+using CrmPluginBase.Extensions;
+using CrmPluginBase.Interfaces;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace Crm.PluginBase
+namespace CrmPluginBase
 {
     public abstract class CrmPluginBase<T> : IPluginMessageOperationExecutor<T>, IPlugin where T : Entity
     {

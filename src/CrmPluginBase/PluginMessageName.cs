@@ -1,4 +1,4 @@
-﻿namespace Crm.PluginBase
+﻿namespace CrmPluginBase
 {
     public static class PluginMessageName
     {

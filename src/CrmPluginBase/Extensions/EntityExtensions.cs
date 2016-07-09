@@ -2,7 +2,7 @@
 
 using Microsoft.Xrm.Sdk;
 
-namespace Crm.PluginBase.Extensions
+namespace CrmPluginBase.Extensions
 {
     public static class EntityExtensions
     {

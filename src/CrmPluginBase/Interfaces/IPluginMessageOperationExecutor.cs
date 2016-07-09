@@ -4,7 +4,7 @@ using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace Crm.PluginBase.Interfaces
+namespace CrmPluginBase.Interfaces
 {
     public interface IPluginMessageOperationExecutor<in T> where T : Entity
     {

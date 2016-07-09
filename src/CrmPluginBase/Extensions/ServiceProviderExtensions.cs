@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Crm.PluginBase.Extensions
+namespace CrmPluginBase.Extensions
 {
     public static class ServiceProviderExtensions
     {

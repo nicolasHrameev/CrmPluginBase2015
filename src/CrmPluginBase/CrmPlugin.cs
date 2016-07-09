@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 
-namespace Crm.PluginBase
+namespace CrmPluginBase
 {
     public abstract class CrmPlugin<T> : CrmPluginBase<T> where T : Entity
     {

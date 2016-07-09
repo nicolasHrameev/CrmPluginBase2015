@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Crm.PluginBase.Exceptions
+namespace CrmPluginBase.Exceptions
 {
     /// <summary>
     /// Internal crm exception without any information for user
