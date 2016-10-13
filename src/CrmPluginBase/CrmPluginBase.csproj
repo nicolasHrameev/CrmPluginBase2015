@@ -48,6 +48,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CrmPlugin.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Interfaces\IPluginMessageOperationExecutor.cs" />
     <Compile Include="ParametersWrapper.cs" />
     <Compile Include="PluginMessageName.cs" />
+    <Compile Include="PluginVirtualMessageName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

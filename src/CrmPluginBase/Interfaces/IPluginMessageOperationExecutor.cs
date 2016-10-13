@@ -132,6 +132,14 @@ namespace CrmPluginBase.Interfaces
         void OnRetrieveMultiple(IPluginExecutionContext context, QueryBase query, EntityCollection entityCollection);
 
         /// <summary>
+        /// Override for ExportToExcel (RetrieveMultiple) plugin message
+        /// </summary>
+        /// <param name="context">Crm Context</param>
+        /// <param name="query">Query of RetrieveMultiple</param>
+        /// <param name="entityCollection">Collection of entity</param>
+        void OnExportToExcel(IPluginExecutionContext context, QueryBase query, EntityCollection entityCollection);
+
+        /// <summary>
         /// Override for GrantAccess plugin message
         /// </summary>
         /// <param name="context">Crm Context</param>

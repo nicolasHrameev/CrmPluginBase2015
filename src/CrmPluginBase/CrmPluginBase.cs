@@ -253,6 +253,16 @@ namespace CrmPluginBase
         }
 
         /// <summary>
+        /// Override for ExportToExcel (RetrieveMultiple) plugin message
+        /// </summary>
+        /// <param name="context">Crm Context</param>
+        /// <param name="query">Query of RetrieveMultiple</param>
+        /// <param name="entityCollection">Collection of entity</param>
+        public virtual void OnExportToExcel(IPluginExecutionContext context, QueryBase query, EntityCollection entityCollection)
+        {
+        }
+
+        /// <summary>
         /// Override for GrantAccess plugin message
         /// </summary>
         /// <param name="context">Crm Context</param>
@@ -310,8 +320,19 @@ namespace CrmPluginBase
         private void OnExecute(IPluginExecutionContext executionContext)
         {
             var parameters = new ParametersWrapper<T>(executionContext);
+            var parentContext = executionContext.ParentContext;
+            if (parentContext != null)
+            {
+                switch (parentContext.MessageName)
+                {
+                    case PluginVirtualMessageName.ExportToExcel:
+                    case PluginVirtualMessageName.ExportDynamicToExcel:
+                        OnExportToExcel(executionContext, parameters.Query, parameters.BusinessEntityCollection);
+                        break;
+                }
+            }
 
-            // ToDo: think about methods dictionary using
+            // ToDo: implement methods dictionary using and/or Visitor pattern
             switch (executionContext.MessageName)
             {
                 case PluginMessageName.Create:
