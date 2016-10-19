@@ -55,7 +55,6 @@
     <Compile Include="CrmPluginBase.cs" />
     <Compile Include="Exceptions\CrmException.cs" />
     <Compile Include="Extensions\EntityExtensions.cs" />
-    <Compile Include="Extensions\IPluginExecutionContextExtensions.cs" />
     <Compile Include="Extensions\OrganizationServiceExtensions.cs" />
     <Compile Include="Extensions\ServiceProviderExtensions.cs" />
     <Compile Include="Interfaces\IPluginMessageOperationExecutor.cs" />

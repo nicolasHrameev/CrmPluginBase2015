@@ -33,7 +33,7 @@ namespace CrmPluginBase
                 if (systemService == null)
                 {
                     var context = ServiceProvider.GetService<IPluginExecutionContext>();
-                    context.EnableProxyTypes(GetProxyAssembly());
+                    GetProxyTypesAssemblyProperty(context.GetType()).SetValue(context, GetProxyAssembly(), new object[0]);
                     var serviceFactory = ServiceProvider.GetService<IOrganizationServiceFactory>();
                     systemService = serviceFactory.CreateOrganizationService(null);
                 }
@@ -48,7 +48,7 @@ namespace CrmPluginBase
             {
                 var serviceFactory = ServiceProvider.GetService<IOrganizationServiceFactory>();
                 var context = ServiceProvider.GetService<IPluginExecutionContext>();
-                context.EnableProxyTypes(GetProxyAssembly());
+                GetProxyTypesAssemblyProperty(context.GetType()).SetValue(context, GetProxyAssembly(), new object[0]);
                 return serviceFactory.CreateOrganizationService(context.InitiatingUserId);
             }
         }
@@ -315,6 +315,11 @@ namespace CrmPluginBase
         protected virtual Assembly GetProxyAssembly()
         {
             return Assembly.GetAssembly(GetType());
+        }
+
+        protected virtual PropertyInfo GetProxyTypesAssemblyProperty(Type type)
+        {
+            return type.GetProperty("ProxyTypesAssembly");
         }
 
         private void OnExecute(IPluginExecutionContext executionContext)
