@@ -14,6 +14,8 @@ namespace CrmPluginBase
     {
         private IOrganizationService systemService;
 
+        private IOrganizationService userService;
+
         protected CrmPluginBase(string unsecure, string secure = null)
         {
             Unsecure = unsecure;
@@ -46,10 +48,15 @@ namespace CrmPluginBase
         {
             get
             {
-                var serviceFactory = ServiceProvider.GetService<IOrganizationServiceFactory>();
-                var context = ServiceProvider.GetService<IPluginExecutionContext>();
-                GetProxyTypesAssemblyProperty(context.GetType()).SetValue(context, GetProxyAssembly(), new object[0]);
-                return serviceFactory.CreateOrganizationService(context.InitiatingUserId);
+                if (userService == null)
+                {
+                    var serviceFactory = ServiceProvider.GetService<IOrganizationServiceFactory>();
+                    var context = ServiceProvider.GetService<IPluginExecutionContext>();
+                    GetProxyTypesAssemblyProperty(context.GetType()).SetValue(context, GetProxyAssembly(), new object[0]);
+                    userService = serviceFactory.CreateOrganizationService(context.InitiatingUserId);
+                }
+
+                return userService;
             }
         }
 
