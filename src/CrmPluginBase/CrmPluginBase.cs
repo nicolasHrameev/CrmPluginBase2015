@@ -46,17 +46,13 @@ namespace CrmPluginBase
             }
         }
 
-        protected ITracingService TracingService
-        {
-            get
-            {
-                return ServiceProvider.GetService<ITracingService>();
-            }
-        }
+        protected ITracingService TracingService => ServiceProvider.GetService<ITracingService>();
 
         public void Execute(IServiceProvider serviceProvider)
         {
             ServiceProvider = serviceProvider;
+            ReconfigureServices(ServiceProvider);
+
             var executionContext = ServiceProvider.GetService<IPluginExecutionContext>();
 
             // ToDo: use Polly
@@ -69,7 +65,7 @@ namespace CrmPluginBase
             }
             catch (CrmException ex)
             {
-                exceptionMessage = string.Format("Error occured:\n{0}", ex.Message);
+                exceptionMessage = $"Error occured:\n{ex.Message}";
                 if (!ex.Expected)
                 {
                     exceptionMessage += "\nStackTrace:\n" + ex.StackTrace;
@@ -79,7 +75,7 @@ namespace CrmPluginBase
             }
             catch (Exception ex)
             {
-                exceptionMessage = string.Format("Error occured:\n{0}\nStackTrace:\n{1}", ex.Message, ex.StackTrace);
+                exceptionMessage = $"Error occured:\n{ex.Message}\nStackTrace:\n{ex.StackTrace}";
                 originException = ex;
             }
             finally
