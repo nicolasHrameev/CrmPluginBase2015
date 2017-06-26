@@ -8,6 +8,6 @@ out of pain InputParameters/OutputParameters parsing.
 Install package from [nuget](https://www.nuget.org/packages/CrmPluginBase2015/) and enjoy!
 
 ### IMPORTANT NOTE: 
-**you must name your PreEntityImage as *preimage* and PostEntityImage as *postimage* exactly**
+**you must name your PreEntityImage as *`preimage`* and PostEntityImage as *`postimage`* exactly**
 
 see [ParametersWrapper .ctor](https://github.com/abelevtsov/CrmPluginBase2015/blob/master/src/CrmPluginBase/ParametersWrapper.cs).
