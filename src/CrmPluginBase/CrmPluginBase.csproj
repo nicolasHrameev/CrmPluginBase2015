@@ -58,6 +58,7 @@
     <Compile Include="Extensions\OrganizationServiceExtensions.cs" />
     <Compile Include="Extensions\ServiceProviderExtensions.cs" />
     <Compile Include="Interfaces\IPluginMessageOperationExecutor.cs" />
+    <Compile Include="MessageCategory.cs" />
     <Compile Include="ParametersWrapper.cs" />
     <Compile Include="PluginMessageName.cs" />
     <Compile Include="PluginVirtualMessageName.cs" />

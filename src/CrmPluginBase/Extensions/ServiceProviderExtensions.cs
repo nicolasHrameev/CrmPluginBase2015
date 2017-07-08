@@ -4,9 +4,6 @@ namespace CrmPluginBase.Extensions
 {
     public static class ServiceProviderExtensions
     {
-        public static TService GetService<TService>(this IServiceProvider serviceProvider)
-        {
-            return (TService)serviceProvider.GetService(typeof(TService));
-        }
+        public static TService GetService<TService>(this IServiceProvider serviceProvider) => (TService)serviceProvider.GetService(typeof(TService));
     }
 }

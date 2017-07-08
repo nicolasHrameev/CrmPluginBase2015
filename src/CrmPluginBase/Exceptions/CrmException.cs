@@ -40,13 +40,10 @@ namespace CrmPluginBase.Exceptions
             this.sourceException = sourceException;
         }
 
-        public long ErrorCode { get; private set; }
+        public long ErrorCode { get; }
 
-        public bool Expected { get; private set; }
+        public bool Expected { get; }
 
-        public override Exception GetBaseException()
-        {
-            return sourceException;
-        }
+        public override Exception GetBaseException() => sourceException;
     }
 }

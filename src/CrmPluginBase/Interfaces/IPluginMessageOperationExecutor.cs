@@ -180,5 +180,12 @@ namespace CrmPluginBase.Interfaces
         /// <param name="formType">Form type</param>
         /// <param name="systemForms">System forms for current entity</param>
         void OnRetrieveFilteredForms(IPluginExecutionContext context, string entityName, Guid userId, OptionSetValue formType, EntityReferenceCollection systemForms);
+
+        /// <summary>
+        /// Override for CustomAction execute message
+        /// </summary>
+        /// <param name="context">Crm Context</param>
+        /// <param name="entity">Typed entity</param>
+        void OnCustomOperation(IPluginExecutionContext context, T entity);
     }
 }

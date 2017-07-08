@@ -24,41 +24,17 @@ namespace CrmPluginBase
             }
         }
 
-        public T PreEntityImage { get; private set; }
+        public T PreEntityImage { get; }
 
-        public T PostEntityImage { get; private set; }
+        public T PostEntityImage { get; }
 
-        public EntityReference TargetRef
-        {
-            get
-            {
-                return InputParameters["Target"] as EntityReference;
-            }
-        }
+        public EntityReference TargetRef => InputParameters["Target"] as EntityReference;
 
-        public Guid Id
-        {
-            get
-            {
-                return OutputParameters.Contains("id") ? Guid.Parse(OutputParameters["id"].ToString()) : Guid.Empty;
-            }
-        }
+        public Guid Id => OutputParameters.Contains("id") ? Guid.Parse(OutputParameters["id"].ToString()) : Guid.Empty;
 
-        public EntityReference EntityMoniker
-        {
-            get
-            {
-                return InputParameters["EntityMoniker"] as EntityReference;
-            }
-        }
+        public EntityReference EntityMoniker => InputParameters["EntityMoniker"] as EntityReference;
 
-        public OptionSetValue State
-        {
-            get
-            {
-                return InputParameters["State"] as OptionSetValue;
-            }
-        }
+        public OptionSetValue State => InputParameters["State"] as OptionSetValue;
 
         public OptionSetValue Status
         {
@@ -69,147 +45,45 @@ namespace CrmPluginBase
             }
         }
 
-        public EntityReference Assignee
-        {
-            get
-            {
-                return InputParameters["Assignee"] as EntityReference;
-            }
-        }
+        public EntityReference Assignee => InputParameters["Assignee"] as EntityReference;
 
-        public Guid SubordinateId
-        {
-            get
-            {
-                return InputParameters.Contains("SubordinateId") ? (Guid)InputParameters["SubordinateId"] : Guid.Empty;
-            }
-        }
+        public Guid SubordinateId => InputParameters.Contains("SubordinateId") ? (Guid)InputParameters["SubordinateId"] : Guid.Empty;
 
-        public Entity UpdateContent
-        {
-            get
-            {
-                return InputParameters["UpdateContent"] as Entity;
-            }
-        }
+        public Entity UpdateContent => InputParameters["UpdateContent"] as Entity;
 
-        public bool PerformParentingChecks
-        {
-            get
-            {
-                return (bool)InputParameters["PerformParentingChecks"];
-            }
-        }
+        public bool PerformParentingChecks => (bool)InputParameters["PerformParentingChecks"];
 
-        public Guid ListId
-        {
-            get
-            {
-                return InputParameters.Contains("ListId") ? (Guid)InputParameters["ListId"] : Guid.Empty;
-            }
-        }
+        public Guid ListId => InputParameters.Contains("ListId") ? (Guid)InputParameters["ListId"] : Guid.Empty;
 
-        public Guid EntityId
-        {
-            get
-            {
-                return InputParameters.Contains("EntityId") ? (Guid)InputParameters["EntityId"] : Guid.Empty;
-            }
-        }
+        public Guid EntityId => InputParameters.Contains("EntityId") ? (Guid)InputParameters["EntityId"] : Guid.Empty;
 
-        public QueryBase Query
-        {
-            get
-            {
-                return InputParameters.Contains("Query") ? (QueryBase)InputParameters["Query"] : null;
-            }
-        }
+        public QueryBase Query => InputParameters.Contains("Query") ? (QueryBase)InputParameters["Query"] : null;
 
-        public EntityCollection BusinessEntityCollection
-        {
-            get
-            {
-                return OutputParameters.Contains("BusinessEntityCollection") ? (EntityCollection)OutputParameters["BusinessEntityCollection"] : null;
-            }
-        }
+        public EntityCollection BusinessEntityCollection => OutputParameters.Contains("BusinessEntityCollection") ? (EntityCollection)OutputParameters["BusinessEntityCollection"] : null;
 
-        public Entity ClosedEntity
-        {
-            get
-            {
-                return (InputParameters.Contains("IncidentResolution")
-                           ? InputParameters["IncidentResolution"]
-                           : InputParameters["QuoteClose"]) as Entity;
-            }
-        }
+        public Entity ClosedEntity => (InputParameters.Contains("IncidentResolution")
+            ? InputParameters["IncidentResolution"]
+            : InputParameters["QuoteClose"]) as Entity;
 
-        public Entity OrderClose
-        {
-            get
-            {
-                return InputParameters["OrderClose"] as Entity;
-            }
-        }
+        public Entity OrderClose => InputParameters["OrderClose"] as Entity;
 
-        public PrincipalAccess PrincipalAccess
-        {
-            get
-            {
-                return (PrincipalAccess)InputParameters["PrincipalAccess"];
-            }
-        }
+        public PrincipalAccess PrincipalAccess => (PrincipalAccess)InputParameters["PrincipalAccess"];
 
-        public EntityReference Revokee
-        {
-            get
-            {
-                return InputParameters["Revokee"] as EntityReference;
-            }
-        }
+        public EntityReference Revokee => InputParameters["Revokee"] as EntityReference;
 
-        public string EntityLogicalName
-        {
-            get
-            {
-                return (string)InputParameters["EntityLogicalName"];
-            }
-        }
+        public string EntityLogicalName => (string)InputParameters["EntityLogicalName"];
 
-        public Guid SystemUserId
-        {
-            get
-            {
-                return (Guid)InputParameters["SystemUserId"];
-            }
-        }
+        public Guid SystemUserId => (Guid)InputParameters["SystemUserId"];
 
-        public OptionSetValue FormType
-        {
-            get
-            {
-                return (OptionSetValue)InputParameters["FormType"];
-            }
-        }
+        public OptionSetValue FormType => (OptionSetValue)InputParameters["FormType"];
 
-        public EntityReferenceCollection SystemForms
-        {
-            get
-            {
-                return OutputParameters["SystemForms"] as EntityReferenceCollection;
-            }
-        }
+        public EntityReferenceCollection SystemForms => OutputParameters["SystemForms"] as EntityReferenceCollection;
 
-        private ParameterCollection InputParameters { get; set; }
+        private ParameterCollection InputParameters { get; }
 
-        private ParameterCollection OutputParameters { get; set; }
+        private ParameterCollection OutputParameters { get; }
 
-        private object Target
-        {
-            get
-            {
-                return InputParameters["Target"];
-            }
-        }
+        private object Target => InputParameters["Target"];
 
         public T TypedEntity(object target = null)
         {
@@ -221,7 +95,7 @@ namespace CrmPluginBase
             }
 
             var entity = target as Entity;
-            return entity != null ? entity.ToEntity<T>() : null;
+            return entity?.ToEntity<T>();
         }
     }
 }
