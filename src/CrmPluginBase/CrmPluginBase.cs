@@ -310,9 +310,18 @@ namespace CrmPluginBase
         /// Override for CustomAction execute message
         /// </summary>
         /// <param name="context">Crm Context</param>
-        /// <param name="targetRef">Target entity reference - null if custom action not entity related</param>
         /// <param name="customAction">Custom action request</param>
-        public virtual void OnCustomOperation(IPluginExecutionContext context, EntityReference targetRef, OrganizationRequest customAction)
+        /// <param name="targetRef">Target entity reference - null if custom action not entity related</param>
+        public virtual void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction, EntityReference targetRef)
+        {
+        }
+
+        /// <summary>
+        /// Override for CustomAction execute message
+        /// </summary>
+        /// <param name="context">Crm Context</param>
+        /// <param name="customAction">Custom action request</param>
+        public virtual void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction)
         {
         }
 
@@ -408,7 +417,14 @@ namespace CrmPluginBase
                 (ctx, p) =>
                 {
                     var request = new OrganizationRequest(ctx.MessageName) { Parameters = ctx.InputParameters };
-                    OnCustomOperation(ctx, p.TargetRef, request);
+                    if (p.TargetRef == null)
+                    {
+                        OnCustomOperation(ctx, request);
+                    }
+                    else
+                    {
+                        OnCustomOperation(ctx, request, p.TargetRef);
+                    }
                 });
         }
     }
