@@ -185,7 +185,8 @@ namespace CrmPluginBase.Interfaces
         /// Override for CustomAction execute message
         /// </summary>
         /// <param name="context">Crm Context</param>
-        /// <param name="entity">Typed entity</param>
-        void OnCustomOperation(IPluginExecutionContext context, T entity);
+        /// <param name="targetRef">Target entity reference - null if custom action not entity related</param>
+        /// <param name="customAction">Custom action request</param>
+        void OnCustomOperation(IPluginExecutionContext context, EntityReference targetRef, OrganizationRequest customAction);
     }
 }

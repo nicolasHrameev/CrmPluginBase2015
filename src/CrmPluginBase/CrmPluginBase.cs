@@ -310,8 +310,9 @@ namespace CrmPluginBase
         /// Override for CustomAction execute message
         /// </summary>
         /// <param name="context">Crm Context</param>
-        /// <param name="entity">Typed entity</param>
-        public virtual void OnCustomOperation(IPluginExecutionContext context, T entity)
+        /// <param name="targetRef">Target entity reference - null if custom action not entity related</param>
+        /// <param name="customAction">Custom action request</param>
+        public virtual void OnCustomOperation(IPluginExecutionContext context, EntityReference targetRef, OrganizationRequest customAction)
         {
         }
 
@@ -402,7 +403,13 @@ namespace CrmPluginBase
                         p.PrincipalAccess.AccessMask));
             eventHandlers.Add(PluginMessageName.RevokeAccess, (ctx, p) => OnRevokeAccess(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.Revokee.LogicalName, p.Revokee.Id));
             eventHandlers.Add(PluginMessageName.RetrieveFilteredForms, (ctx, p) => OnRetrieveFilteredForms(ctx, p.EntityLogicalName, p.SystemUserId, p.FormType, p.SystemForms));
-            eventHandlers.Add(MessageCategory.CustomOperation, (ctx, p) => OnCustomOperation(ctx, p.TypedEntity()));
+            eventHandlers.Add(
+                MessageCategory.CustomOperation,
+                (ctx, p) =>
+                {
+                    var request = new OrganizationRequest(ctx.MessageName) { Parameters = ctx.InputParameters };
+                    OnCustomOperation(ctx, p.TargetRef, request);
+                });
         }
     }
 }
