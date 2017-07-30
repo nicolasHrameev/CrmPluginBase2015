@@ -360,7 +360,8 @@ namespace CrmPluginBase
                 messageName = parentContext == null ? executionContext.MessageName : parentContext.MessageName;
             }
 
-            if (eventHandlers.TryGetValue(messageName, out Action<IPluginExecutionContext, ParametersWrapper<T>> pluginAction))
+            Action<IPluginExecutionContext, ParametersWrapper<T>> pluginAction;
+            if (eventHandlers.TryGetValue(messageName, out pluginAction))
             {
                 pluginAction(executionContext, parameters);
             }
