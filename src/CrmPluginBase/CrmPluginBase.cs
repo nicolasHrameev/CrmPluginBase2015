@@ -355,9 +355,15 @@ namespace CrmPluginBase
             {
                 messageName = MessageCategory.CustomOperation;
             }
+            else if (parentContext != null &&
+                     (parentContext.MessageName == PluginVirtualMessageName.ExportToExcel ||
+                      parentContext.MessageName == PluginVirtualMessageName.ExportDynamicToExcel))
+            {
+                messageName = parentContext.MessageName;
+            }
             else
             {
-                messageName = parentContext == null ? executionContext.MessageName : parentContext.MessageName;
+                messageName = executionContext.MessageName;
             }
 
             Action<IPluginExecutionContext, ParametersWrapper<T>> pluginAction;
