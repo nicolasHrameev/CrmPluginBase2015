@@ -13,20 +13,20 @@ namespace PluginTests
     // ReSharper disable once RedundantExtendsListEntry
     // ReSharper disable once ClassNeverInstantiated.Global
     /// <summary>
-    /// A simple example of CrmPluginBase usage with proxy class entity rare_search.
-    /// Of course you can use any your own proxy class or even just Entity as generic type parameter (<see cref="TraceAllUpdateOperationsPlugin"/>)
+    /// A simple example of CrmPluginBase usage with proxy class entity new_search.
+    /// Certainly you can use any of your own proxy classes or even just Entity as generic type parameter (<see cref="TraceAllUpdateOperationsPlugin"/>)
     /// </summary>
-    public class DenyActiveRecordDeletionPlugin : CrmPlugin<rare_search>, IPlugin
+    public class DenyActiveRecordDeletionPlugin : CrmPlugin<new_search>, IPlugin
     {
         /// <summary>
-        /// Deny deletion of active rare_search entities
+        /// Deny deletion of active new_search entities
         /// </summary>
-        /// <exception cref="CrmException">Deletion of active rare_search records is forbidden!</exception>
-        public override void OnDelete(IPluginExecutionContext context, string entityName, Guid primaryEntityId, rare_search preEntityImage)
+        /// <exception cref="CrmException">Deletion of active new_search records is forbidden!</exception>
+        public override void OnDelete(IPluginExecutionContext context, string entityName, Guid primaryEntityId, new_search preEntityImage)
         {
-            if (preEntityImage.statuscode == rare_searchStatus.Активный_Активный)
+            if (preEntityImage.statuscode == new_searchStatus.Active_Active)
             {
-                throw new CrmException("Deletion of active rare_search records is forbidden!", expected: true);
+                throw new CrmException($"Deletion of active {new_search.EntityLogicalName} records is forbidden!", expected: true);
             }
         }
     }
@@ -40,9 +40,9 @@ namespace PluginTests
     {
         public override void OnUpdate(IPluginExecutionContext context, Entity entity, Guid primaryEntityId)
         {
-            var message = string.Format("Entity '{0}', Id = '{1}' updated", entity.LogicalName, primaryEntityId);
-            var traceEntity = new Entity("rare_trace");
-            traceEntity["rare_tracemessage"] = message;
+            var message = $"Entity '{entity.LogicalName}', Id = '{primaryEntityId}' updated";
+            var traceEntity = new Entity("new_trace");
+            traceEntity["new_tracemessage"] = message;
 
             SystemOrgService.Create(traceEntity);
             TracingService.Trace(message);
