@@ -6,7 +6,7 @@ namespace CrmPluginBase.Extensions
 {
     public static class EntityExtensions
     {
-        public static T Merge<T>(this T primary, T secondary) where T : Entity, new()
+        public static TEntity Merge<TEntity>(this TEntity primary, TEntity secondary) where TEntity : Entity, new()
         {
             var merged = primary.Clone();
             secondary.Attributes
@@ -18,9 +18,9 @@ namespace CrmPluginBase.Extensions
             return merged;
         }
 
-        public static T Clone<T>(this T entity) where T : Entity, new()
+        public static TEntity Clone<TEntity>(this TEntity entity) where TEntity : Entity, new()
         {
-            var clone = new T();
+            var clone = new TEntity();
             var primaryKeyName = entity.LogicalName.ToLowerInvariant() + "id";
             clone.Attributes.AddRange(entity.Attributes.Where(a => a.Key != primaryKeyName));
             clone.LogicalName = entity.LogicalName;
@@ -28,7 +28,7 @@ namespace CrmPluginBase.Extensions
             return clone;
         }
 
-        public static T Without<T>(this T entity, params string[] excludedAttributes) where T : Entity, new()
+        public static TEntity Without<TEntity>(this TEntity entity, params string[] excludedAttributes) where TEntity : Entity, new()
         {
             foreach (var attr in excludedAttributes)
             {
@@ -36,6 +36,21 @@ namespace CrmPluginBase.Extensions
             }
 
             return entity;
+        }
+
+        public static TEntity ToEntity<TEntity>(this object entity) where TEntity : Entity
+        {
+            switch (entity)
+            {
+                case null:
+                    return null;
+                case TEntity typedEntity:
+                    return typedEntity;
+                default:
+                {
+                    return (entity as Entity)?.ToEntity<TEntity>();
+                }
+            }
         }
     }
 }

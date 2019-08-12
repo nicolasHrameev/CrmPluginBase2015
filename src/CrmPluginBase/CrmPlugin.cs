@@ -2,7 +2,7 @@
 
 namespace CrmPluginBase
 {
-    public abstract class CrmPlugin<T> : CrmPluginBase<T> where T : Entity
+    public abstract class CrmPlugin<TEntity> : CrmPluginBase<TEntity> where TEntity : Entity
     {
         protected CrmPlugin()
             : this(null, null)

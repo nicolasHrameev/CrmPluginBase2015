@@ -6,7 +6,7 @@ using Microsoft.Xrm.Sdk.Query;
 
 namespace CrmPluginBase.Interfaces
 {
-    public interface IPluginMessageOperationExecutor<in T> where T : Entity
+    public interface IPluginMessageOperationExecutor<in TEntity> where TEntity : Entity
     {
         /// <summary>
         /// Override for Update plugin message
@@ -16,7 +16,7 @@ namespace CrmPluginBase.Interfaces
         /// <param name="primaryEntityId">Id of the primary entity</param>
         /// <param name="preEntityImage">Entity image for pre operation</param>
         /// <param name="postEntityImage">Entity image for post operation</param>
-        void OnUpdate(IPluginExecutionContext context, T entity, Guid primaryEntityId, T preEntityImage, T postEntityImage);
+        void OnUpdate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId, TEntity preEntityImage, TEntity postEntityImage);
 
         /// <summary>
         /// Override for Create plugin message
@@ -25,7 +25,7 @@ namespace CrmPluginBase.Interfaces
         /// <param name="entity">Typed entity</param>
         /// <param name="primaryEntityId">Id of the entity</param>
         /// <param name="postEntityImage">Entity image for post operation</param>
-        void OnCreate(IPluginExecutionContext context, T entity, Guid primaryEntityId, T postEntityImage);
+        void OnCreate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId, TEntity postEntityImage);
 
         /// <summary>
         /// Override for Delete plugin message
@@ -34,7 +34,7 @@ namespace CrmPluginBase.Interfaces
         /// <param name="entityName">Entity name</param>
         /// <param name="primaryEntityId">Id of the entity</param>
         /// <param name="preEntityImage">Entity image for pre operation</param>
-        void OnDelete(IPluginExecutionContext context, string entityName, Guid primaryEntityId, T preEntityImage);
+        void OnDelete(IPluginExecutionContext context, string entityName, Guid primaryEntityId, TEntity preEntityImage);
 
         /// <summary>
         /// Override for Update plugin message
@@ -42,7 +42,7 @@ namespace CrmPluginBase.Interfaces
         /// <param name="context">Crm Context</param>
         /// <param name="entity">Typed entity</param>
         /// <param name="primaryEntityId">Id of the primary entity</param>
-        void OnUpdate(IPluginExecutionContext context, T entity, Guid primaryEntityId);
+        void OnUpdate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId);
 
         /// <summary>
         /// Override for Create plugin message
@@ -50,7 +50,7 @@ namespace CrmPluginBase.Interfaces
         /// <param name="context">Crm Context</param>
         /// <param name="entity">Typed entity</param>
         /// <param name="primaryEntityId">Id of the entity</param>
-        void OnCreate(IPluginExecutionContext context, T entity, Guid primaryEntityId);
+        void OnCreate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId);
 
         /// <summary>
         /// Override for Delete plugin message
@@ -186,14 +186,7 @@ namespace CrmPluginBase.Interfaces
         /// </summary>
         /// <param name="context">Crm Context</param>
         /// <param name="customAction">Custom action request</param>
-        /// <param name="targetRef">Target entity reference - null if custom action not entity related</param>
-        void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction, EntityReference targetRef);
-
-        /// <summary>
-        /// Override for CustomAction execute message
-        /// </summary>
-        /// <param name="context">Crm Context</param>
-        /// <param name="customAction">Custom action request</param>
-        void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction);
+        /// <param name="targetRef">Target entity reference - <langword name="null"/> if custom action not entity related</param>
+        void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction, EntityReference targetRef = null);
     }
 }

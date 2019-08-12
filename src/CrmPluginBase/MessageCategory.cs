@@ -2,6 +2,6 @@
 {
     public static class MessageCategory
     {
-        public const string CustomOperation = "CustomOperation";
+        public const string CustomOperation = nameof(CustomOperation);
     }
 }

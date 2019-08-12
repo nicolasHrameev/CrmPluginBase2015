@@ -2,7 +2,7 @@
 {
     public static class PluginVirtualMessageName
     {
-        public const string ExportToExcel = "ExportToExcel";
-        public const string ExportDynamicToExcel = "ExportDynamicToExcel";
+        public const string ExportToExcel = nameof(ExportToExcel);
+        public const string ExportDynamicToExcel = nameof(ExportDynamicToExcel);
     }
 }

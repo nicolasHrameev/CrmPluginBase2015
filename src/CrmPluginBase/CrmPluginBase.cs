@@ -11,21 +11,30 @@ using Microsoft.Xrm.Sdk.Query;
 
 namespace CrmPluginBase
 {
-    public abstract class CrmPluginBase<T> : IPluginMessageOperationExecutor<T>, IPlugin where T : Entity
+    /// <summary>
+    /// Provides ability for easy CRM plugins creation with focus on what you need to do and out of pain InputParameters/OutputParameters parsing
+    /// </summary>
+    /// <typeparam name="TEntity">Early-bound entity type or even just Entity (late-bound)</typeparam>
+    public abstract class CrmPluginBase<TEntity> : IPluginMessageOperationExecutor<TEntity>, IPlugin where TEntity : Entity
     {
-        private readonly IDictionary<string, Action<IPluginExecutionContext, ParametersWrapper<T>>> eventHandlers = new Dictionary<string, Action<IPluginExecutionContext, ParametersWrapper<T>>>();
+        private static readonly IDictionary<string, Action<CrmPluginBase<TEntity>, IPluginExecutionContext, ParametersWrapper<TEntity>>> EventHandlers =
+            new Dictionary<string, Action<CrmPluginBase<TEntity>, IPluginExecutionContext, ParametersWrapper<TEntity>>>();
 
         protected CrmPluginBase(string unsecure, string secure = null)
         {
             Unsecure = unsecure;
             Secure = secure;
 
-            FillEventHandlers();
+            InitEventHandlers();
         }
 
         protected string Unsecure { get; }
 
         protected string Secure { get; }
+
+        protected virtual string PreEntityImageName => "preimage";
+
+        protected virtual string PostEntityImageName => "postimage";
 
         protected IServiceProvider ServiceProvider { get; set; }
 
@@ -53,6 +62,9 @@ namespace CrmPluginBase
 
         protected ITracingService TracingService => ServiceProvider.GetService<ITracingService>();
 
+        /// <summary>
+        /// You don't need to call this method directly - rather override one (or even more) OnXXX methods
+        /// </summary>
         public void Execute(IServiceProvider serviceProvider)
         {
             ServiceProvider = serviceProvider;
@@ -60,35 +72,13 @@ namespace CrmPluginBase
 
             var executionContext = ServiceProvider.GetService<IPluginExecutionContext>();
 
-            // ToDo: use Polly
-            var exceptionMessage = string.Empty;
-            Exception originException = null;
-
             try
             {
                 OnExecute(executionContext);
             }
-            catch (CrmException ex)
-            {
-                exceptionMessage = $"Error occured:\n{ex.Message}";
-                if (!ex.Expected)
-                {
-                    exceptionMessage += "\nStackTrace:\n" + ex.StackTrace;
-                }
-
-                originException = ex;
-            }
             catch (Exception ex)
             {
-                exceptionMessage = $"Error occured:\n{ex.Message}\nStackTrace:\n{ex.StackTrace}";
-                originException = ex;
-            }
-            finally
-            {
-                if (originException != null)
-                {
-                    throw new InvalidPluginExecutionException(exceptionMessage, originException);
-                }
+                OnException(ex);
             }
         }
 
@@ -100,7 +90,7 @@ namespace CrmPluginBase
         /// <param name="primaryEntityId">Id of the primary entity</param>
         /// <param name="preEntityImage">Entity image for pre operation</param>
         /// <param name="postEntityImage">Entity image for post operation</param>
-        public virtual void OnUpdate(IPluginExecutionContext context, T entity, Guid primaryEntityId, T preEntityImage, T postEntityImage)
+        public virtual void OnUpdate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId, TEntity preEntityImage, TEntity postEntityImage)
         {
             OnUpdate(context, entity, primaryEntityId);
         }
@@ -112,7 +102,7 @@ namespace CrmPluginBase
         /// <param name="entity">Typed entity</param>
         /// <param name="primaryEntityId">Id of the entity</param>
         /// <param name="postEntityImage">Entity image for post operation</param>
-        public virtual void OnCreate(IPluginExecutionContext context, T entity, Guid primaryEntityId, T postEntityImage)
+        public virtual void OnCreate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId, TEntity postEntityImage)
         {
             OnCreate(context, entity, primaryEntityId);
         }
@@ -124,7 +114,7 @@ namespace CrmPluginBase
         /// <param name="entityName">Entity name</param>
         /// <param name="primaryEntityId">Id of the entity</param>
         /// <param name="preEntityImage">Entity image for pre operation</param>
-        public virtual void OnDelete(IPluginExecutionContext context, string entityName, Guid primaryEntityId, T preEntityImage)
+        public virtual void OnDelete(IPluginExecutionContext context, string entityName, Guid primaryEntityId, TEntity preEntityImage)
         {
             OnDelete(context, entityName, primaryEntityId);
         }
@@ -135,7 +125,7 @@ namespace CrmPluginBase
         /// <param name="context">Crm Context</param>
         /// <param name="entity">Typed entity</param>
         /// <param name="primaryEntityId">Id of the primary entity</param>
-        public virtual void OnUpdate(IPluginExecutionContext context, T entity, Guid primaryEntityId)
+        public virtual void OnUpdate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId)
         {
         }
 
@@ -145,7 +135,7 @@ namespace CrmPluginBase
         /// <param name="context">Crm Context</param>
         /// <param name="entity">Typed entity</param>
         /// <param name="primaryEntityId">Id of the entity</param>
-        public virtual void OnCreate(IPluginExecutionContext context, T entity, Guid primaryEntityId)
+        public virtual void OnCreate(IPluginExecutionContext context, TEntity entity, Guid primaryEntityId)
         {
         }
 
@@ -311,29 +301,14 @@ namespace CrmPluginBase
         /// </summary>
         /// <param name="context">Crm Context</param>
         /// <param name="customAction">Custom action request</param>
-        /// <param name="targetRef">Target entity reference - null if custom action not entity related</param>
-        public virtual void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction, EntityReference targetRef)
+        /// <param name="targetRef">Target entity reference - <langword name="null"/> if custom action not entity related</param>
+        public virtual void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction, EntityReference targetRef = null)
         {
         }
 
-        /// <summary>
-        /// Override for CustomAction execute message
-        /// </summary>
-        /// <param name="context">Crm Context</param>
-        /// <param name="customAction">Custom action request</param>
-        public virtual void OnCustomOperation(IPluginExecutionContext context, OrganizationRequest customAction)
-        {
-        }
+        protected virtual Assembly GetProxyAssembly() => Assembly.GetAssembly(GetType());
 
-        protected virtual Assembly GetProxyAssembly()
-        {
-            return Assembly.GetAssembly(GetType());
-        }
-
-        protected virtual PropertyInfo GetProxyTypesAssemblyProperty(Type type)
-        {
-            return type.GetProperty("ProxyTypesAssembly");
-        }
+        protected virtual PropertyInfo GetProxyTypesAssemblyProperty(Type type) => type.GetProperty("ProxyTypesAssembly");
 
         protected virtual void ReconfigureServices(IServiceProvider serviceProvider)
         {
@@ -341,97 +316,105 @@ namespace CrmPluginBase
 
         private void OnExecute(IPluginExecutionContext executionContext)
         {
-            var parameters = new ParametersWrapper<T>(executionContext);
+            var parameters = new ParametersWrapper<TEntity>(executionContext, PreEntityImageName, PostEntityImageName);
             var parentContext = executionContext.ParentContext;
             var prop = executionContext.GetType().GetProperty("MessageCategory");
-            var messageCategory = string.Empty;
-            if (prop != null)
-            {
-                messageCategory = (string)prop.GetValue(executionContext);
-            }
+            var messageCategory = prop == null ? string.Empty : (string)prop.GetValue(executionContext);
 
             string messageName;
-            if (messageCategory == MessageCategory.CustomOperation)
+            switch (messageCategory)
             {
-                messageName = MessageCategory.CustomOperation;
-            }
-            else if (parentContext != null &&
-                     (parentContext.MessageName == PluginVirtualMessageName.ExportToExcel ||
-                      parentContext.MessageName == PluginVirtualMessageName.ExportDynamicToExcel))
-            {
-                messageName = parentContext.MessageName;
-            }
-            else
-            {
-                messageName = executionContext.MessageName;
+                case MessageCategory.CustomOperation:
+                    messageName = MessageCategory.CustomOperation;
+                    break;
+                default:
+                {
+                    messageName =
+                        parentContext != null &&
+                        (parentContext.MessageName == PluginVirtualMessageName.ExportToExcel ||
+                         parentContext.MessageName == PluginVirtualMessageName.ExportDynamicToExcel)
+                            ? parentContext.MessageName
+                            : executionContext.MessageName;
+
+                    break;
+                }
             }
 
-            Action<IPluginExecutionContext, ParametersWrapper<T>> pluginAction;
-            if (eventHandlers.TryGetValue(messageName, out pluginAction))
+            if (EventHandlers.TryGetValue(messageName, out var pluginAction))
             {
-                pluginAction(executionContext, parameters);
+                pluginAction(this, executionContext, parameters);
             }
         }
 
-        private void FillEventHandlers()
+        protected virtual void OnException(Exception ex)
         {
-            eventHandlers.Clear();
-
-            eventHandlers.Add(PluginVirtualMessageName.ExportToExcel, (ctx, p) => OnExportToExcel(ctx, p.Query, p.BusinessEntityCollection));
-            eventHandlers.Add(PluginVirtualMessageName.ExportDynamicToExcel, (ctx, p) => OnExportToExcel(ctx, p.Query, p.BusinessEntityCollection));
-            eventHandlers.Add(PluginMessageName.Create, (ctx, p) => OnCreate(ctx, p.TypedEntity(), p.Id, p.PostEntityImage));
-            eventHandlers.Add(
-                PluginMessageName.Update,
-                (ctx, p) =>
+            // ToDo: use Polly
+            if (ex is CrmException crmEx)
+            {
+                var exceptionMessage = $"Error occured:\n{ex.Message}";
+                if (!crmEx.Expected)
                 {
-                    var typedEntity = p.TypedEntity();
-                    OnUpdate(ctx, typedEntity, typedEntity.Id, p.PreEntityImage, p.PostEntityImage);
+                    exceptionMessage += "\nStackTrace:\n" + ex.StackTrace;
+                }
+
+                throw new InvalidPluginExecutionException(exceptionMessage, crmEx);
+            }
+
+            throw new InvalidPluginExecutionException($"Error occured:\n{ex.Message}\nStackTrace:\n{ex.StackTrace}", ex);
+        }
+
+        private static void InitEventHandlers()
+        {
+            EventHandlers.Clear();
+
+            EventHandlers.Add(PluginVirtualMessageName.ExportToExcel, (plugin, ctx, p) => plugin.OnExportToExcel(ctx, p.Query, p.BusinessEntityCollection));
+            EventHandlers.Add(PluginVirtualMessageName.ExportDynamicToExcel, (plugin, ctx, p) => plugin.OnExportToExcel(ctx, p.Query, p.BusinessEntityCollection));
+            EventHandlers.Add(PluginMessageName.Create, (plugin, ctx, p) => plugin.OnCreate(ctx, p.Target, p.Id, p.PostEntityImage));
+            EventHandlers.Add(
+                PluginMessageName.Update,
+                (plugin, ctx, p) =>
+                {
+                    var target = p.Target;
+                    plugin.OnUpdate(ctx, target, target.Id, p.PreEntityImage, p.PostEntityImage);
                 });
-            eventHandlers.Add(PluginMessageName.Delete, (ctx, p) => OnDelete(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.PreEntityImage));
-            eventHandlers.Add(PluginMessageName.SetState, (ctx, p) => OnSetState(ctx, p.EntityMoniker.LogicalName, p.EntityMoniker.Id, p.State, p.Status));
-            eventHandlers.Add(PluginMessageName.SetStateDynamicEntity, (ctx, p) => OnSetState(ctx, p.EntityMoniker.LogicalName, p.EntityMoniker.Id, p.State, p.Status));
-            eventHandlers.Add(PluginMessageName.Assign, (ctx, p) => OnAssign(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.Assignee.LogicalName, p.Assignee.Id));
-            eventHandlers.Add(PluginMessageName.Merge, (ctx, p) => OnMerge(ctx, p.TargetRef, p.SubordinateId, p.UpdateContent, p.PerformParentingChecks));
-            eventHandlers.Add(PluginMessageName.AddMember, (ctx, p) => OnAddMember(ctx, p.ListId, p.EntityId, p.Id));
-            eventHandlers.Add(PluginMessageName.RemoveMember, (ctx, p) => OnRemoveMember(ctx, p.ListId, p.EntityId));
-            eventHandlers.Add(PluginMessageName.RetrieveMultiple, (ctx, p) => OnRetrieveMultiple(ctx, p.Query, p.BusinessEntityCollection));
-            eventHandlers.Add(PluginMessageName.Close, (ctx, p) => OnClose(ctx, p.ClosedEntity, p.Status));
-            eventHandlers.Add(PluginMessageName.Cancel, (ctx, p) => OnCancel(ctx, p.OrderClose, p.Status));
-            eventHandlers.Add(
+            EventHandlers.Add(PluginMessageName.Delete, (plugin, ctx, p) => plugin.OnDelete(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.PreEntityImage));
+            EventHandlers.Add(PluginMessageName.SetState, (plugin, ctx, p) => plugin.OnSetState(ctx, p.EntityMoniker.LogicalName, p.EntityMoniker.Id, p.State, p.Status));
+            EventHandlers.Add(PluginMessageName.SetStateDynamicEntity, (plugin, ctx, p) => plugin.OnSetState(ctx, p.EntityMoniker.LogicalName, p.EntityMoniker.Id, p.State, p.Status));
+            EventHandlers.Add(PluginMessageName.Assign, (plugin, ctx, p) => plugin.OnAssign(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.Assignee.LogicalName, p.Assignee.Id));
+            EventHandlers.Add(PluginMessageName.Merge, (plugin, ctx, p) => plugin.OnMerge(ctx, p.TargetRef, p.SubordinateId, p.UpdateContent, p.PerformParentingChecks));
+            EventHandlers.Add(PluginMessageName.AddMember, (plugin, ctx, p) => plugin.OnAddMember(ctx, p.ListId, p.EntityId, p.Id));
+            EventHandlers.Add(PluginMessageName.RemoveMember, (plugin, ctx, p) => plugin.OnRemoveMember(ctx, p.ListId, p.EntityId));
+            EventHandlers.Add(PluginMessageName.RetrieveMultiple, (plugin, ctx, p) => plugin.OnRetrieveMultiple(ctx, p.Query, p.BusinessEntityCollection));
+            EventHandlers.Add(PluginMessageName.Close, (plugin, ctx, p) => plugin.OnClose(ctx, p.ClosedEntity, p.Status));
+            EventHandlers.Add(PluginMessageName.Cancel, (plugin, ctx, p) => plugin.OnCancel(ctx, p.OrderClose, p.Status));
+            EventHandlers.Add(
                 PluginMessageName.GrantAccess,
-                (ctx, p) =>
-                    OnGrantAccess(
+                (plugin, ctx, p) =>
+                    plugin.OnGrantAccess(
                         ctx,
                         p.TargetRef.LogicalName,
                         p.TargetRef.Id,
                         p.PrincipalAccess.Principal.LogicalName,
                         p.PrincipalAccess.Principal.Id,
                         p.PrincipalAccess.AccessMask));
-            eventHandlers.Add(
+            EventHandlers.Add(
                 PluginMessageName.ModifyAccess,
-                (ctx, p) =>
-                    OnModifyAccess(
+                (plugin, ctx, p) =>
+                    plugin.OnModifyAccess(
                         ctx,
                         p.TargetRef.LogicalName,
                         p.TargetRef.Id,
                         p.PrincipalAccess.Principal.LogicalName,
                         p.PrincipalAccess.Principal.Id,
                         p.PrincipalAccess.AccessMask));
-            eventHandlers.Add(PluginMessageName.RevokeAccess, (ctx, p) => OnRevokeAccess(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.Revokee.LogicalName, p.Revokee.Id));
-            eventHandlers.Add(PluginMessageName.RetrieveFilteredForms, (ctx, p) => OnRetrieveFilteredForms(ctx, p.EntityLogicalName, p.SystemUserId, p.FormType, p.SystemForms));
-            eventHandlers.Add(
+            EventHandlers.Add(PluginMessageName.RevokeAccess, (plugin, ctx, p) => plugin.OnRevokeAccess(ctx, p.TargetRef.LogicalName, p.TargetRef.Id, p.Revokee.LogicalName, p.Revokee.Id));
+            EventHandlers.Add(PluginMessageName.RetrieveFilteredForms, (plugin, ctx, p) => plugin.OnRetrieveFilteredForms(ctx, p.EntityLogicalName, p.SystemUserId, p.FormType, p.SystemForms));
+            EventHandlers.Add(
                 MessageCategory.CustomOperation,
-                (ctx, p) =>
+                (plugin, ctx, p) =>
                 {
                     var request = new OrganizationRequest(ctx.MessageName) { Parameters = ctx.InputParameters };
-                    if (p.TargetRef == null)
-                    {
-                        OnCustomOperation(ctx, request);
-                    }
-                    else
-                    {
-                        OnCustomOperation(ctx, request, p.TargetRef);
-                    }
+                    plugin.OnCustomOperation(ctx, request, p.TargetRef);
                 });
         }
     }
