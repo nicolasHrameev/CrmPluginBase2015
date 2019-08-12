@@ -41,14 +41,17 @@ namespace PluginTests
         public override void OnUpdate(IPluginExecutionContext context, Entity entity, Guid primaryEntityId)
         {
             var message = $"Entity '{entity.LogicalName}', Id = '{primaryEntityId}' updated";
-            var traceEntity = new Entity("new_trace");
-            traceEntity["new_tracemessage"] = message;
+            var traceEntity =
+                new Entity("new_trace")
+                    {
+                        ["new_tracemessage"] = message
+                    };
 
             SystemOrgService.Create(traceEntity);
             TracingService.Trace(message);
         }
     }
-    
+
     public class RestrictAccountsExportToExcelPlugin : CrmPlugin<Account>, IPlugin
     {
         public override void OnExportToExcel(IPluginExecutionContext context, QueryBase query, EntityCollection entityCollection)
@@ -74,20 +77,25 @@ namespace PluginTests
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private QueryExpression ToQueryExpression(QueryBase query)
         {
-            var fetchExpression = query as FetchExpression;
-            if (fetchExpression == null)
+            switch (query)
             {
-                return query as QueryExpression;
-            }
+                case QueryExpression queryExpression:
+                    return queryExpression;
+                case FetchExpression fetchExpression:
+                {
+                    var request =
+                        new FetchXmlToQueryExpressionRequest
+                            {
+                                FetchXml = fetchExpression.Query
+                            };
+                    return ((FetchXmlToQueryExpressionResponse)SystemOrgService.Execute(request)).Query;
+                }
 
-            var request =
-                new FetchXmlToQueryExpressionRequest
-                    {
-                        FetchXml = fetchExpression.Query
-                    };
-            return ((FetchXmlToQueryExpressionResponse)SystemOrgService.Execute(request)).Query;
+                default:
+                    return null;
+            }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool UserAvailableForExportAccountsToExcel(Guid userId)
         {
