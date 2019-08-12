@@ -4,11 +4,10 @@ using System.Runtime.CompilerServices;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using CrmPluginBase;
 using CrmPluginBase.Exceptions;
 using ProxyClasses;
 
-namespace PluginTests
+namespace CrmPluginBase.Examples
 {
     // ReSharper disable once RedundantExtendsListEntry
     // ReSharper disable once ClassNeverInstantiated.Global
@@ -72,6 +71,15 @@ namespace PluginTests
 
             // ReSharper disable once RedundantAssignment
             query = queryExpression;
+        }
+
+        /// <summary>
+        /// Just to show a possibility of custom exception handling in pipeline
+        /// </summary>
+        protected override void OnException(Exception ex)
+        {
+            // ToDo: paste your custom exception handling logic here (log exception for example)
+            base.OnException(ex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -19,11 +19,10 @@ using System.Runtime.CompilerServices;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
-using CrmPluginBase;
 using CrmPluginBase.Exceptions;
 using ProxyClasses;
 
-namespace PluginTests
+namespace CrmPluginBase.Examples
 {
     // ReSharper disable once RedundantExtendsListEntry
     // ReSharper disable once ClassNeverInstantiated.Global
@@ -56,14 +55,17 @@ namespace PluginTests
         public override void OnUpdate(IPluginExecutionContext context, Entity entity, Guid primaryEntityId)
         {
             var message = $"Entity '{entity.LogicalName}', Id = '{primaryEntityId}' updated";
-            var traceEntity = new Entity("new_trace");
-            traceEntity["new_tracemessage"] = message;
+            var traceEntity =
+                new Entity("new_trace")
+                    {
+                        ["new_tracemessage"] = message
+                    };
 
             SystemOrgService.Create(traceEntity);
             TracingService.Trace(message);
         }
     }
-    
+
     public class RestrictAccountsExportToExcelPlugin : CrmPlugin<Account>, IPlugin
     {
         public override void OnExportToExcel(IPluginExecutionContext context, QueryBase query, EntityCollection entityCollection)
@@ -86,23 +88,37 @@ namespace PluginTests
             query = queryExpression;
         }
 
+        /// <summary>
+        /// Just to show a possibility of custom exception handling in pipeline
+        /// </summary>
+        protected override void OnException(Exception ex)
+        {
+            // ToDo: paste your custom exception handling logic here (log exception for example)
+            base.OnException(ex);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private QueryExpression ToQueryExpression(QueryBase query)
         {
-            var fetchExpression = query as FetchExpression;
-            if (fetchExpression == null)
+            switch (query)
             {
-                return query as QueryExpression;
-            }
+                case QueryExpression queryExpression:
+                    return queryExpression;
+                case FetchExpression fetchExpression:
+                {
+                    var request =
+                        new FetchXmlToQueryExpressionRequest
+                            {
+                                FetchXml = fetchExpression.Query
+                            };
+                    return ((FetchXmlToQueryExpressionResponse)SystemOrgService.Execute(request)).Query;
+                }
 
-            var request =
-                new FetchXmlToQueryExpressionRequest
-                    {
-                        FetchXml = fetchExpression.Query
-                    };
-            return ((FetchXmlToQueryExpressionResponse)SystemOrgService.Execute(request)).Query;
+                default:
+                    return null;
+            }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool UserAvailableForExportAccountsToExcel(Guid userId)
         {
