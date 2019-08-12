@@ -28,6 +28,8 @@ namespace CrmPluginBase.Examples
                 throw new CrmException($"Deletion of active {new_search.EntityLogicalName} records is forbidden!", expected: true);
             }
         }
+
+        protected sealed override string PreEntityImageName => "MyCustomPreEntityImage";
     }
 
     // ReSharper disable once RedundantExtendsListEntry
